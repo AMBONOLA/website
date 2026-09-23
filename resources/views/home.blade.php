@@ -20,13 +20,13 @@
             </a>
         </header>
 
-        <main class="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center px-6 pb-24">
+        <main class="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center px-6 pb-16 sm:pb-24">
             <p class="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-mustard-100 px-3 py-1 text-sm font-medium text-mustard-800">
                 <span class="h-2 w-2 rounded-full bg-mustard-500"></span>
                 Full-Stack Engineer
             </p>
 
-            <h1 class="text-5xl font-extrabold leading-tight tracking-tight sm:text-7xl">
+            <h1 class="text-4xl font-extrabold leading-tight tracking-tight sm:text-7xl">
                 Hi, I'm Andrea Bonola<span class="text-mustard-500">.</span>
             </h1>
 
@@ -37,7 +37,7 @@
 
             <div class="mt-10 h-1.5 w-24 rounded-full bg-mustard-500"></div>
 
-            <section class="mt-16 grid gap-8 sm:grid-cols-3">
+            <section class="mt-12 grid gap-8 sm:mt-16 sm:grid-cols-3">
                 <div>
                     <h2 class="font-semibold">Back end</h2>
                     <p class="mt-2 text-stone-600">APIs, databases and the server-side logic that holds it all together.</p>
