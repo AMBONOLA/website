@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+      target: production
+    image: website-app:dev
+    ports:
+      - "8000:8080"
+    volumes:
+      - .:/app
+    # Database connection (DB_URL -> Neon "dev" branch) comes from the bind-mounted .env.
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      PHP_OPCACHE_VALIDATE_TIMESTAMPS: "1"
+      RUN_MIGRATIONS: "true"
+
+  vite:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm ci --legacy-peer-deps && npm run dev"
+    environment:
+      RUNNING_IN_DOCKER: "true"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+
+volumes:
+  node_modules:

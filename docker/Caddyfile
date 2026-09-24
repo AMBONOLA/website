@@ -1,0 +1,24 @@
+{
+	frankenphp
+}
+
+# A bare port (no hostname) serves plain HTTP; TLS is terminated by the host platform.
+:{$PORT:8080} {
+	root * /app/public
+	encode zstd br gzip
+
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# Vite output is content-hashed, so it can be cached forever.
+	@build path /build/*
+	header @build Cache-Control "public, max-age=31536000, immutable"
+
+	@dotfiles path */.*
+	respond @dotfiles 404
+
+	php_server
+}

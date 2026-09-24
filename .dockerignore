@@ -1,0 +1,51 @@
+# VCS, editors and AI tooling
+.git
+.github
+.idea
+.vscode
+.claude
+.ai
+.mcp.json
+boost.json
+AGENTS.md
+CLAUDE.md
+README.md
+.editorconfig
+.eslintrc.json
+.prettierrc
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Dependencies are installed inside the image
+node_modules
+vendor
+
+# Build output and local dev artifacts
+public/build
+public/hot
+public/storage
+bootstrap/cache/*.php
+
+# Secrets - production env vars are injected at runtime
+.env
+.env.*
+auth.json
+
+# Runtime state
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/pail
+database/*.sqlite
+*.log
+
+# Tests are run by CI, not shipped
+tests
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
