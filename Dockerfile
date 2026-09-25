@@ -19,7 +19,8 @@ COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint
 
 # Production never re-checks PHP files for changes; docker-compose flips this to 1.
-ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS=0
+ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
+    PHP_OPCACHE_REVALIDATE_FREQ=0
 
 # -----------------------------------------------------------------------------
 # vendor: production Composer dependencies (no dev packages)
@@ -33,7 +34,9 @@ RUN apt-get update \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock ./
 
-RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist
+# Cache mounts keep downloaded packages between builds without adding them to the image.
+RUN --mount=type=cache,target=/root/.cache/composer \
+    composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist
 
 # -----------------------------------------------------------------------------
 # Stage 1 - assets: build the React/Inertia bundle with Vite
@@ -43,7 +46,8 @@ FROM node:${NODE_VERSION}-alpine AS assets
 WORKDIR /app
 
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --legacy-peer-deps
 
 # tsc resolves the `ziggy-js` types from the Composer package (see tsconfig.json paths).
 COPY --from=vendor /app/vendor/tightenco/ziggy ./vendor/tightenco/ziggy

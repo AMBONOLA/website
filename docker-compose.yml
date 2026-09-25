@@ -14,12 +14,21 @@ services:
       APP_DEBUG: "true"
       APP_URL: http://localhost:8000
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: "1"
+      # Re-check PHP files at most once a second instead of on every request.
+      PHP_OPCACHE_REVALIDATE_FREQ: "1"
+      # Keep cache and sessions local instead of round-tripping to the remote Neon database.
+      CACHE_STORE: file
+      SESSION_DRIVER: file
       RUN_MIGRATIONS: "true"
 
   vite:
     image: node:22-alpine
     working_dir: /app
-    command: sh -c "npm ci --legacy-peer-deps && npm run dev"
+    # Reinstall only when package-lock.json changes, so node_modules and Vite's pre-bundle cache survive restarts.
+    command: >-
+      sh -c "sha1sum -c -s node_modules/.docker-lock.sha1 2>/dev/null
+      || (npm ci --legacy-peer-deps && sha1sum package-lock.json > node_modules/.docker-lock.sha1);
+      npm run dev"
     environment:
       RUNNING_IN_DOCKER: "true"
     ports:
@@ -27,6 +36,8 @@ services:
     volumes:
       - .:/app
       - node_modules:/app/node_modules
+      - npm_cache:/root/.npm
 
 volumes:
   node_modules:
+  npm_cache:
