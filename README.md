@@ -1,58 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# website
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![CI](https://github.com/AMBONOLA/website/actions/workflows/ci.yml/badge.svg)](https://github.com/AMBONOLA/website/actions/workflows/ci.yml)
+[![Build & Push Image](https://github.com/AMBONOLA/website/actions/workflows/cd.yml/badge.svg)](https://github.com/AMBONOLA/website/actions/workflows/cd.yml)
 
-## About Laravel
+My personal portfolio site, and a hands-on experiment for learning **Docker** and **CI/CD**.
+The site itself is intentionally small for now; the interesting part is how it gets built, tested, packaged and shipped.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Layer | Tech |
+|---|---|
+| Backend | Laravel 13, PHP 8.4 |
+| Frontend | React + TypeScript via Inertia.js, Tailwind CSS, Vite 8 |
+| Web server | [FrankenPHP](https://frankenphp.dev) (Caddy + PHP in one binary) |
+| Database | Postgres on [Neon](https://neon.tech) |
+| Tests | Pest (in-memory SQLite) |
+| CI/CD | GitHub Actions → GitHub Container Registry (GHCR) |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## How it fits together
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+ git push to main
+        │
+        ▼
+ ┌──────────────┐   fail → stop, nothing is published
+ │   CI         │   Pint (PHP style) · ESLint · tsc + Vite build · Pest tests
+ └──────┬───────┘
+        │ pass
+        ▼
+ ┌──────────────┐
+ │   CD         │   builds the production Docker image
+ └──────┬───────┘
+        ▼
+ ghcr.io/ambonola/website:latest  (+ one tag per commit)
+        │
+        ▼
+ hosting provider pulls and runs the image   ← next step
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Running it locally
 
-## Contributing
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) and a `.env` file (copy `.env.example`, set `APP_KEY` and `DB_URL`).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+docker compose up -d --build   # first run, or after changing the Dockerfile / composer.json
+docker compose up -d           # everyday start
+```
 
-## Code of Conduct
+- App: <http://localhost:8000>
+- Vite dev server (hot reload): <http://localhost:5173>
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Task | Command |
+|---|---|
+| Follow logs | `docker compose logs -f app` |
+| Artisan | `docker compose exec app php artisan <command>` |
+| Tests | `docker compose exec -e APP_ENV=testing -e SESSION_DRIVER=array -e CACHE_STORE=array app php vendor/bin/pest` |
+| Stop | `docker compose down` |
+| Reclaim Docker disk space | `docker system df` then `docker system prune` |
 
-## Security Vulnerabilities
+## What I built and why
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+A running log of the decisions behind this setup: the part of the project I actually wanted to learn.
 
-## License
+### One Dockerfile, multiple stages
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The [`Dockerfile`](Dockerfile) is split into stages: `vendor` installs Composer packages, `assets` builds the frontend with Node, and `production` copies only the results onto FrankenPHP.
+**Why:** the final image doesn't carry Node, Composer or build tools, just what's needed to serve the site, so it's smaller and has less to go wrong. Build caches keep repeat builds fast.
+
+### Local development with Docker Compose
+
+[`docker-compose.yml`](docker-compose.yml) runs two containers: `app` (the same production image, with the code mounted in so edits show up instantly) and `vite` (the dev server for hot reloading React/CSS).
+**Why:** local dev runs on the same PHP version, extensions and web server as production, so "works on my machine" means something.
+
+Tuning that came from actually measuring things:
+- **Vite polling** was using ~47% CPU because file-change events don't cross from Windows into containers, so it was re-scanning `vendor/` constantly. Ignoring backend-only folders brought it down to ~2.5%.
+- **`npm ci` on every start** wiped `node_modules` each time. Now it only reinstalls when `package-lock.json` changes.
+- **Cache and sessions** were stored in the remote Neon database, which added network round-trips to every request. Local dev now uses files instead (production is unchanged).
+
+### CI: prove it works before shipping it
+
+[`ci.yml`](.github/workflows/ci.yml) runs on every push and pull request: code style (Pint), linting (ESLint), a type-checked production build, and the test suite.
+**Why:** catch mistakes automatically, on a clean machine, before they reach anyone.
+
+### CD: publish only what passed
+
+[`cd.yml`](.github/workflows/cd.yml) runs **only after CI passes** on `main`, builds the production image, and pushes it to GHCR tagged `latest` plus the commit SHA.
+**Why:** a broken commit can never become a deployable image, and every version is traceable back to the exact commit it came from (and can be rolled back to).
+
+### Lessons from the trenches
+
+- GHCR requires lowercase image names, but the GitHub username has capitals, so the workflow uses `docker/metadata-action` to generate the tags.
+- `@vitejs/plugin-react` v4 didn't support Vite 8, which caused a confusing `Invalid input options … "jsx"` warning. Upgrading to v6 fixed it.
