@@ -75,7 +75,7 @@ The [`Dockerfile`](Dockerfile) is split into stages: `vendor` installs Composer 
 Tuning that came from actually measuring things:
 - **Vite polling** was using ~47% CPU because file-change events don't cross from Windows into containers, so it was re-scanning `vendor/` constantly. Ignoring backend-only folders brought it down to ~2.5%.
 - **`npm ci` on every start** wiped `node_modules` each time. Now it only reinstalls when `package-lock.json` changes.
-- **Cache and sessions** were stored in the remote Neon database, which added network round-trips to every request. Local dev now uses files instead (production is unchanged).
+
 
 ### CI: prove it works before shipping it
 
