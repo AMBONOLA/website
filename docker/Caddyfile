@@ -1,5 +1,7 @@
 {
 	frankenphp
+	# The admin API is never used, and Render's port scan probes it and logs 403s.
+	admin off
 }
 
 # A bare port (no hostname) serves plain HTTP; TLS is terminated by the host platform.
