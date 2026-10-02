@@ -11,8 +11,11 @@ FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION} AS base
 
 WORKDIR /app
 
+# The image grants frankenphp CAP_NET_BIND_SERVICE as a file capability; hosts that drop
+# capabilities (e.g. Render) then refuse to exec it. Port 8080 doesn't need it, so remove it.
 RUN install-php-extensions bcmath intl opcache pcntl pdo_pgsql \
-    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && setcap -r /usr/local/bin/frankenphp
 
 COPY docker/php/app.ini "$PHP_INI_DIR/conf.d/zz-app.ini"
 COPY docker/Caddyfile /etc/caddy/Caddyfile
