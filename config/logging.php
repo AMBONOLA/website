@@ -76,7 +76,7 @@ return [
         'browser' => [
             'driver' => 'daily',
             'path' => storage_path('logs/browser.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_BROWSER_LEVEL', 'info'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
