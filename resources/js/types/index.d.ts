@@ -12,3 +12,14 @@ export type PageProps<
         user: User;
     };
 };
+
+export interface Insight {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt: string;
+    body: string;
+    published_at: string | null;
+    created_at: string;
+    updated_at: string;
+}

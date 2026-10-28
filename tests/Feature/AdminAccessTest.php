@@ -6,6 +6,8 @@ dataset('admin pages', [
     'dashboard' => '/admin',
     'profile' => '/admin/profile',
     'confirm password' => '/admin/confirm-password',
+    'insights' => '/admin/insights',
+    'new insight' => '/admin/insights/create',
 ]);
 
 it('redirects guests to the admin login', function (string $url) {
