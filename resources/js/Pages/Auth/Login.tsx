@@ -4,16 +4,10 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-export default function Login({
-    status,
-    canResetPassword,
-}: {
-    status?: string;
-    canResetPassword: boolean;
-}) {
+export default function Login({ status }: { status?: string }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -31,6 +25,12 @@ export default function Login({
     return (
         <GuestLayout>
             <Head title="Log in" />
+
+            <h1 className="text-3xl font-extrabold tracking-tight">
+                Log in<span className="text-mustard-500">.</span>
+            </h1>
+
+            <div className="mb-8 mt-4 h-1.5 w-16 rounded-full bg-mustard-500"></div>
 
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
@@ -84,23 +84,17 @@ export default function Login({
                                 )
                             }
                         />
-                        <span className="ms-2 text-sm text-gray-600">
+                        <span className="ms-2 text-sm text-stone-600">
                             Remember me
                         </span>
                     </label>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                <div className="mt-6">
+                    <PrimaryButton
+                        className="w-full justify-center"
+                        disabled={processing}
+                    >
                         Log in
                     </PrimaryButton>
                 </div>

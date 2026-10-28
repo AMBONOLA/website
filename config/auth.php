@@ -114,4 +114,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Email
+    |--------------------------------------------------------------------------
+    |
+    | The only email address allowed to log in and use the admin area. When
+    | it is empty, nobody can log in. Create or reset the account with the
+    | "app:create-admin" Artisan command.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL'),
+
 ];

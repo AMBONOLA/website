@@ -18,6 +18,24 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Determine whether this user is the site's single admin, identified by the configured admin email.
+     */
+    public function isAdmin(): bool
+    {
+        return static::isAdminEmail($this->email);
+    }
+
+    /**
+     * Determine whether the given email is the configured admin email. Always false when none is configured.
+     */
+    public static function isAdminEmail(string $email): bool
+    {
+        $admin_email = config('auth.admin_email');
+
+        return filled($admin_email) && strcasecmp($email, $admin_email) === 0;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
