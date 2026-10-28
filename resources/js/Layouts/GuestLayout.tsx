@@ -1,19 +1,28 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
 export default function Guest({ children }: PropsWithChildren) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
-            </div>
+        <div className="flex min-h-screen flex-col bg-stone-50 text-stone-900 selection:bg-mustard-300">
+            <header className="mx-auto flex w-full max-w-4xl items-center px-6 py-8">
+                <a
+                    href={route('home')}
+                    className="text-lg font-extrabold tracking-tight"
+                >
+                    AB<span className="text-mustard-500">.</span>
+                </a>
+            </header>
 
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
-                {children}
-            </div>
+            <main className="flex flex-1 items-center justify-center px-6 pb-16 sm:pb-24">
+                <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-8 shadow-sm">
+                    {children}
+                </div>
+            </main>
+
+            <footer className="border-t border-stone-200">
+                <div className="mx-auto w-full max-w-4xl px-6 py-6 text-sm text-stone-500">
+                    &copy; {new Date().getFullYear()} Andrea Bonola
+                </div>
+            </footer>
         </div>
     );
 }
