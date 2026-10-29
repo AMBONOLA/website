@@ -32,6 +32,14 @@ it('shows the admin dashboard to the admin', function () {
     $response->assertOk();
 });
 
+it('gives the admin the full route list', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->get('/admin');
+
+    $response->assertSee('admin.insights.store');
+});
+
 it('does not expose registration, password reset, or the old login path', function (string $url) {
     $response = $this->get($url);
 

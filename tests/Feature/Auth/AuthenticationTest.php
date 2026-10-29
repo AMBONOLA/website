@@ -8,6 +8,15 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
+test('login screen does not expose admin route names', function () {
+    $response = $this->get('/admin/login');
+
+    $response->assertSee('"login"', false);
+    $response->assertDontSee('admin.insights');
+    $response->assertDontSee('profile.edit');
+    $response->assertDontSee('/admin/insights');
+});
+
 test('the admin can authenticate using the login screen', function () {
     $admin = User::factory()->admin()->create();
 
@@ -87,4 +96,25 @@ test('the admin can logout', function () {
 
     $this->assertGuest();
     $response->assertRedirect(route('login', absolute: false));
+});
+
+test('logging in through inertia forces a full page load to refresh the route list', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->withHeader('X-Inertia', 'true')->post('/admin/login', [
+        'email' => $admin->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertStatus(409);
+    $response->assertHeader('X-Inertia-Location', route('dashboard'));
+});
+
+test('logging out through inertia forces a full page load to refresh the route list', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->withHeader('X-Inertia', 'true')->post('/admin/logout');
+
+    $response->assertStatus(409);
+    $response->assertHeader('X-Inertia-Location', route('login'));
 });
