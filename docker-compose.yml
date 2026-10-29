@@ -8,7 +8,7 @@ services:
       - "8000:8080"
     volumes:
       - .:/app
-    # Database connection (DB_URL -> Neon "dev" branch) comes from the bind-mounted .env.
+    # Database connection (DB_URL -> Neon) comes from .env.
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
