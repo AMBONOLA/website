@@ -11,7 +11,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,800&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @routes(auth()->user()?->isAdmin() ? null : 'guest')
+        @routes(auth()->user()?->isAdmin() ? null : 'guest', Vite::cspNonce())
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
         @inertiaHead
