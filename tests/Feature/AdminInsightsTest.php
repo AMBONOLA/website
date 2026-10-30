@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\InsightController as AdminInsightController;
+use App\Http\Controllers\Admin\InsightPreviewController;
 use App\Models\Insight;
 use App\Models\User;
+use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
@@ -14,7 +18,7 @@ function insightPayload(array $overrides = []): array
         'title' => 'Docker on Windows is slow',
         'slug' => 'docker-on-windows-is-slow',
         'excerpt' => 'Why bind mounts hurt and what to do about it.',
-        'body' => '## The problem',
+        'body' => '<h2>The problem</h2>',
         'is_published' => false,
         ...$overrides,
     ];
@@ -27,6 +31,39 @@ it('forbids logged-in users other than the admin from creating insights', functi
 
     $response->assertForbidden();
     expect(Insight::count())->toBe(0);
+});
+
+describe('defense in depth', function () {
+    it('keeps the insight controller admin-only when registered outside the admin route group', function () {
+        $user = User::factory()->create();
+        $insight = Insight::factory()->create();
+        Route::middleware('web')->delete('/unguarded/insights/{insight}', [AdminInsightController::class, 'destroy']);
+
+        $response = $this->actingAs($user)->delete("/unguarded/insights/{$insight->id}");
+
+        $response->assertForbidden();
+        $this->assertModelExists($insight);
+    });
+
+    it('keeps the preview controller admin-only when registered outside the admin route group', function () {
+        $user = User::factory()->create();
+        Route::middleware('web')->post('/unguarded/preview', InsightPreviewController::class);
+
+        $response = $this->actingAs($user)->postJson('/unguarded/preview', ['body' => '<p>Hi</p>']);
+
+        $response->assertForbidden();
+    });
+
+    it('refuses non-admins in the form request even if the authorization middleware is skipped', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->withoutMiddleware(Authorize::class)
+            ->post(route('admin.insights.store'), insightPayload());
+
+        $response->assertForbidden();
+        expect(Insight::count())->toBe(0);
+    });
 });
 
 describe('index', function () {
@@ -88,6 +125,36 @@ describe('store', function () {
             'body' => 'The body field is required.',
             'is_published' => 'The is published field is required.',
         ]);
+    });
+
+    it('treats an empty editor as a missing body', function () {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.insights.store'), insightPayload(['body' => '<p></p>']));
+
+        $response->assertSessionHasErrors(['body' => 'The body field is required.']);
+        expect(Insight::count())->toBe(0);
+    });
+
+    it('rejects a body over the size limit', function () {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.insights.store'), insightPayload([
+            'body' => '<p>'.str_repeat('a', 200_000).'</p>',
+        ]));
+
+        $response->assertSessionHasErrors(['body' => 'The body field must not be greater than 200000 characters.']);
+        expect(Insight::count())->toBe(0);
+    });
+
+    it('stores the body with unsafe HTML removed', function () {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->post(route('admin.insights.store'), insightPayload([
+            'body' => '<p onclick="steal()">Hi <img src=x onerror="steal()"><script>steal()</script></p>',
+        ]));
+
+        expect(Insight::sole()->body)->toBe('<p>Hi </p>');
     });
 
     it('rejects a slug that is already taken', function () {
@@ -156,16 +223,16 @@ describe('destroy', function () {
 });
 
 describe('preview', function () {
-    it('renders Markdown with raw HTML escaped', function () {
+    it('returns the sanitized HTML', function () {
         $admin = User::factory()->admin()->create();
 
         $response = $this->actingAs($admin)->postJson(route('admin.insights.preview'), [
-            'body' => "## Heading\n\n<script>alert('xss')</script>",
+            'body' => "<h2>Heading</h2><script>alert('xss')</script>",
         ]);
 
         expect($response->json('html'))
             ->toContain('<h2>Heading</h2>')
-            ->toContain('&lt;script&gt;')
-            ->not->toContain('<script>');
+            ->not->toContain('<script>')
+            ->not->toContain('alert');
     });
 });

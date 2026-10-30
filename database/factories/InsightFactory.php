@@ -18,7 +18,7 @@ class InsightFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title),
             'excerpt' => fake()->sentence(12),
-            'body' => fake()->paragraphs(3, asText: true),
+            'body' => '<p>'.implode('</p><p>', fake()->paragraphs(3)).'</p>',
             'published_at' => null,
         ];
     }

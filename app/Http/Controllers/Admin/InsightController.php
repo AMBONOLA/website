@@ -6,11 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\InsightRequest;
 use App\Models\Insight;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class InsightController extends Controller
+class InsightController extends Controller implements HasMiddleware
 {
+    /**
+     * Repeats the route group's checks so the controller stays admin-only even if a route is ever registered outside that group.
+     *
+     * @return array<int, string>
+     */
+    public static function middleware(): array
+    {
+        return ['auth', 'can:admin'];
+    }
+
     public function index(): Response
     {
         return Inertia::render('Insights/Index', [

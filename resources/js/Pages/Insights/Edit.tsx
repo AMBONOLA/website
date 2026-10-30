@@ -2,6 +2,7 @@ import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import RichTextEditor from '@/Components/RichTextEditor';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Insight } from '@/types';
@@ -162,7 +163,7 @@ export default function Edit({ insight }: { insight: Insight | null }) {
 
                         <div>
                             <div className="flex items-end justify-between gap-4">
-                                <InputLabel htmlFor="body" value="Body" />
+                                <InputLabel id="body-label" value="Body" />
                                 <div className="flex gap-4" role="tablist">
                                     <button
                                         type="button"
@@ -186,20 +187,10 @@ export default function Edit({ insight }: { insight: Insight | null }) {
                             </div>
 
                             {tab === 'write' ? (
-                                <textarea
-                                    id="body"
-                                    rows={20}
-                                    className={
-                                        textareaClassName + ' font-mono text-sm'
-                                    }
+                                <RichTextEditor
+                                    labelledBy="body-label"
                                     value={data.body}
-                                    onChange={(e) =>
-                                        setData('body', e.target.value)
-                                    }
-                                    placeholder={
-                                        '## A heading\n\nWrite in **Markdown**. Use `code`, lists, links and\n\n```\ncode blocks\n```'
-                                    }
-                                    required
+                                    onChange={(value) => setData('body', value)}
                                 />
                             ) : (
                                 <div className="mt-1 min-h-[30rem] rounded-md border border-stone-300 p-6">
@@ -210,7 +201,7 @@ export default function Edit({ insight }: { insight: Insight | null }) {
                                             <div className="h-4 w-2/3 rounded bg-stone-200" />
                                         </div>
                                     ) : (
-                                        // The server escapes raw HTML in the Markdown, so this is safe to inject.
+                                        // The server sanitizes this HTML (Insight::sanitizeHtml), so it is safe to inject.
                                         <div
                                             className="insight-body"
                                             dangerouslySetInnerHTML={{
@@ -259,9 +250,26 @@ export default function Edit({ insight }: { insight: Insight | null }) {
                                     href={route('insights.show', insight.slug)}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-sm font-medium text-stone-500 hover:text-stone-900"
+                                    aria-label="View live"
+                                    title="View live"
+                                    className="text-stone-500 transition hover:text-mustard-600"
                                 >
-                                    View live ↗
+                                    {/* "external-link" icon from Feather (MIT licence), matching the site footer. */}
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.75"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                        <polyline points="15 3 21 3 21 9" />
+                                        <line x1="10" y1="14" x2="21" y2="3" />
+                                    </svg>
                                 </a>
                             )}
 
