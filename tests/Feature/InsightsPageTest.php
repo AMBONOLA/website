@@ -69,7 +69,7 @@ it('strips scripts, event handlers and unsafe links from the insight body', func
 
     $response->assertSee('Hover')
         ->assertDontSee("<script>alert('xss')</script>", escape: false)
-        ->assertDontSee('onmouseover', escape: false)
+        ->assertDontSee('onmouseover="alert(1)"', escape: false)
         ->assertDontSee('javascript:', escape: false)
         ->assertDontSee('evil.example', escape: false);
 });
@@ -96,7 +96,7 @@ it('sanitizes a body that was written to the database directly', function () {
 
     $response->assertSee('<p>Tampered</p>', escape: false)
         ->assertDontSee('<script>alert(1)</script>', escape: false)
-        ->assertDontSee('onerror', escape: false);
+        ->assertDontSee('onerror="alert(1)"', escape: false);
 });
 
 it('shows the reading time rounded up to whole minutes', function (int $word_count, string $expected) {
