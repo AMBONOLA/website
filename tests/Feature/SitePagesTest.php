@@ -6,10 +6,12 @@ it('renders the about page', function () {
     $response->assertOk()->assertSee('About me');
 });
 
-it('renders the projects page as coming soon', function () {
+it('lists projects with their screenshot and links', function () {
     $response = $this->get(route('projects'));
 
-    $response->assertOk()->assertSee('Projects are coming soon');
+    $response->assertSee('This website')
+        ->assertSee(asset('images/projects/website.png'))
+        ->assertSee('https://github.com/AMBONOLA/website');
 });
 
 it('links to every section from the navigation', function () {
