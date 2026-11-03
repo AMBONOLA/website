@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InsightController as AdminInsightController;
 use App\Http\Controllers\Admin\InsightPreviewController;
 use App\Http\Controllers\InsightController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Insight;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return view('home', [
@@ -20,9 +20,7 @@ Route::view('/projects', 'projects')->name('projects');
 Route::view('/about', 'about')->name('about');
 
 Route::prefix('admin')->middleware(['auth', 'can:admin'])->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

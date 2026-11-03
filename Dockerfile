@@ -73,6 +73,10 @@ RUN --mount=type=bind,from=composer:2,source=/usr/bin/composer,target=/usr/bin/c
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache /data/caddy /config/caddy
 
+# The commit this image was built from, shown on the admin dashboard. Empty for local builds.
+ARG APP_COMMIT=""
+ENV APP_COMMIT=$APP_COMMIT
+
 # Run as an unprivileged user; port 8080 needs no root to bind.
 USER www-data
 

@@ -30,6 +30,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Commit
+    |--------------------------------------------------------------------------
+    |
+    | The commit the running image was built from, shown on the admin dashboard.
+    | It's empty for local builds, which the dashboard shows as "not recorded".
+    |
+    */
+
+    'commit' => env('APP_COMMIT') ?: null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
